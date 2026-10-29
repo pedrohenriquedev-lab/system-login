@@ -1,105 +1,195 @@
+
+function showMessage(message) {
+  const element = document.getElementById("msg");
+
+  if (element) {
+    element.textContent = message;
+  }
+}
+
 // CADASTRO
 function register() {
-  let user = document.getElementById("regUser").value
-  let pass = document.getElementById("regPass").value
+  const userInput = document.getElementById("regUser");
+  const passInput = document.getElementById("regPass");
+
+  if (!userInput || !passInput) return;
+
+  const user = userInput.value.trim();
+  const pass = passInput.value;
 
   if (!user || !pass) {
-    document.getElementById("msg").innerText = "Preencha tudo!"
-    return
+    showMessage("Preencha todos os campos.");
+    return;
   }
 
-  let users = getUsers()
-
-  if (users.find(u => u.user === user)) {
-    document.getElementById("msg").innerText = "Usuário já existe"
-    return
+  if (user.length < 3) {
+    showMessage("O usuário precisa ter pelo menos 3 caracteres.");
+    return;
   }
 
-  users.push({
+  if (pass.length < 6) {
+    showMessage("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  const users = getUsers();
+
+  const alreadyExists = users.some(
+    (item) => item.user.toLowerCase() === user.toLowerCase()
+  );
+
+  if (alreadyExists) {
+    showMessage("Esse nome de usuário já está cadastrado.");
+    return;
+  }
+
+  const newUser = {
     user,
     pass,
-    createdAt: new Date().toLocaleString(),
-    lastLogin: null,
+    createdAt: new Date().toLocaleString("pt-BR"),
+    lastLogin: new Date().toLocaleString("pt-BR"),
     theme: "dark"
-  })
+  };
 
-  saveUsers(users)
+  users.push(newUser);
+  saveUsers(users);
 
-  document.getElementById("msg").innerText = "Conta criada!"
+  // Inicia a sessão automaticamente após o cadastro.
+  localStorage.setItem("loggedUser", user);
+
+  window.location.href = "dashboard.html";
 }
 
 // LOGIN
 function login() {
-  let user = document.getElementById("loginUser").value
-  let pass = document.getElementById("loginPass").value
+  const userInput = document.getElementById("loginUser");
+  const passInput = document.getElementById("loginPass");
 
-  let users = getUsers()
+  if (!userInput || !passInput) return;
 
-  let found = users.find(u => u.user === user && u.pass === pass)
+  const user = userInput.value.trim();
+  const pass = passInput.value;
 
-  if (found) {
-    found.lastLogin = new Date().toLocaleString()
-    saveUsers(users)
-
-    localStorage.setItem("loggedUser", user)
-
-    window.location.href = "dashboard.html"
-  } else {
-    document.getElementById("msg").innerText = "Login inválido"
+  if (!user || !pass) {
+    showMessage("Informe seu usuário e sua senha.");
+    return;
   }
+
+  const users = getUsers();
+
+  const found = users.find(
+    (item) =>
+      item.user.toLowerCase() === user.toLowerCase() &&
+      item.pass === pass
+  );
+
+  if (!found) {
+    showMessage("Usuário ou senha incorretos.");
+    return;
+  }
+
+  found.lastLogin = new Date().toLocaleString("pt-BR");
+  saveUsers(users);
+
+  localStorage.setItem("loggedUser", found.user);
+  window.location.href = "dashboard.html";
 }
 
 // LOGOUT
 function logout() {
-  localStorage.removeItem("loggedUser")
-  window.location.href = "index.html"
+  localStorage.removeItem("loggedUser");
+  window.location.href = "index.html";
 }
 
-// PROTEGER PÁGINAS
+// PROTEÇÃO DAS PÁGINAS INTERNAS
 function protect() {
   if (!getLoggedUser()) {
-    window.location.href = "index.html"
+    window.location.href = "index.html";
+    return false;
   }
+
+  return true;
 }
 
 // DASHBOARD
 if (window.location.pathname.includes("dashboard")) {
-  protect()
+  if (protect()) {
+    const users = getUsers();
+    const current = getLoggedUser();
+    const user = users.find((item) => item.user === current);
 
-  let users = getUsers()
-  let current = getLoggedUser()
-  let user = users.find(u => u.user === current)
+    if (!user) {
+      logout();
+    } else {
+      const welcome = document.getElementById("welcome");
+      const lastLogin = document.getElementById("lastLogin");
 
-  document.getElementById("welcome").innerText = "Bem-vindo, " + user.user
-  document.getElementById("lastLogin").innerText = "Último acesso: " + user.lastLogin
+      if (welcome) {
+        welcome.textContent = `Bem-vindo, ${user.user}`;
+      }
+
+      if (lastLogin) {
+        lastLogin.textContent = `Último acesso: ${user.lastLogin || "Primeiro acesso"}`;
+      }
+
+      if (user.theme === "light") {
+        document.body.classList.add("light");
+      }
+    }
+  }
 }
 
-// PROFILE
+// PERFIL
 if (window.location.pathname.includes("profile")) {
-  protect()
+  if (protect()) {
+    const users = getUsers();
+    const current = getLoggedUser();
+    const user = users.find((item) => item.user === current);
 
-  let users = getUsers()
-  let current = getLoggedUser()
-  let user = users.find(u => u.user === current)
+    if (!user) {
+      logout();
+    } else {
+      const username = document.getElementById("username");
+      const created = document.getElementById("created");
+      const lastLogin = document.getElementById("lastLogin");
 
-  document.getElementById("username").innerText = "Usuário: " + user.user
-  document.getElementById("created").innerText = "Criado em: " + user.createdAt
-  document.getElementById("lastLogin").innerText = "Último login: " + user.lastLogin
+      if (username) {
+        username.textContent = `Usuário: ${user.user}`;
+      }
 
-  if (user.theme === "light") {
-    document.body.classList.add("light")
+      if (created) {
+        created.textContent = `Criado em: ${user.createdAt}`;
+      }
+
+      if (lastLogin) {
+        lastLogin.textContent = `Último login: ${user.lastLogin || "Ainda não realizado"}`;
+      }
+
+      if (user.theme === "light") {
+        document.body.classList.add("light");
+      }
+    }
   }
 }
 
 // TEMA
 function toggleTheme() {
-  document.body.classList.toggle("light")
+  if (!getLoggedUser()) return;
 
-  let users = getUsers()
-  let current = getLoggedUser()
-  let user = users.find(u => u.user === current)
+  document.body.classList.toggle("light");
 
-  user.theme = document.body.classList.contains("light") ? "light" : "dark"
+  const users = getUsers();
+  const current = getLoggedUser();
+  const user = users.find((item) => item.user === current);
 
-  saveUsers(users)
+  if (!user) {
+    logout();
+    return;
+  }
+
+  user.theme = document.body.classList.contains("light")
+    ? "light"
+    : "dark";
+
+  saveUsers(users);
 }
