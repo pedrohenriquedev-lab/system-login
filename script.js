@@ -54,11 +54,9 @@ function register() {
   users.push(newUser);
   saveUsers(users);
 
-  // Inicia a sessão automaticamente após o cadastro.
-  localStorage.setItem("loggedUser", user);
-
-  window.location.href = "dashboard.html";
-}
+ // Após o cadastro, volta para a tela de login.
+localStorage.removeItem("loggedUser");
+window.location.href = "index.html";
 
 // LOGIN
 function login() {
