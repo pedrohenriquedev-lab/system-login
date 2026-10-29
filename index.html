@@ -1,28 +1,65 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Login</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Acesse sua conta no Login System.">
+  <title>Entrar | Login System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <main class="container">
+    <header>
+      <div class="brand-icon" aria-hidden="true">L</div>
+      <p class="brand-name">LOGIN SYSTEM</p>
+      <h1>Bem-vindo de volta</h1>
+      <p class="subtitle">Entre com seus dados para acessar sua conta.</p>
+    </header>
 
-<div class="container">
-<h2>Login</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="loginUser">Nome de usuário</label>
+        <input
+          id="loginUser"
+          name="username"
+          type="text"
+          placeholder="Digite seu usuário"
+          autocomplete="username"
+          required
+        >
+      </div>
 
-<input id="loginUser" placeholder="Usuário">
-<input id="loginPass" type="password" placeholder="Senha">
+      <div class="form-group">
+        <label for="loginPass">Senha</label>
+        <input
+          id="loginPass"
+          name="password"
+          type="password"
+          placeholder="Digite sua senha"
+          autocomplete="current-password"
+          required
+        >
+      </div>
 
-<button onclick="login()">Entrar</button>
+      <button type="submit">Entrar na conta</button>
+      <p id="msg" role="alert" aria-live="polite"></p>
+    </form>
 
-<p>Não tem conta? <a href="register.html">Criar conta</a></p>
+    <footer>
+      <p>Ainda não tem uma conta?</p>
+      <a href="register.html">Criar uma conta</a>
+    </footer>
+  </main>
 
-<p id="msg"></p>
-</div>
-
-<script src="utils.js"></script>
-<script src="script.js"></script>
-
+  <script src="utils.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      login();
+    });
+  </script>
 </body>
 </html>
